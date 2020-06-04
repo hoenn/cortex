@@ -401,7 +401,7 @@ func (t *Cortex) initTableManager() (services.Service, error) {
 func (t *Cortex) initRuler() (serv services.Service, err error) {
 	t.Cfg.Ruler.Ring.ListenPort = t.Cfg.Server.GRPCListenPort
 	t.Cfg.Ruler.Ring.KVStore.MemberlistKV = t.MemberlistKV.GetMemberlistKV
-	queryable, engine := querier.New(t.Cfg.Querier, t.Distributor, t.StoreQueryable, t.TombstonesLoader, prometheus.DefaultRegisterer)
+	queryable, engine := querier.New(t.Cfg.Querier, t.Distributor, t.StoreQueryable, t.TombstonesLoader, prometheus.NewRegistry())
 
 	t.Ruler, err = ruler.NewRuler(t.Cfg.Ruler, engine, queryable, t.Distributor, prometheus.DefaultRegisterer, util.Logger)
 	if err != nil {
@@ -551,7 +551,7 @@ func (t *Cortex) setupModuleManager() error {
 		Compactor:      {API},
 		StoreGateway:   {API},
 		DataPurger:     {Store, DeleteRequestsStore, API},
-		All:            {QueryFrontend, Querier, Ingester, Distributor, TableManager, DataPurger, StoreGateway},
+		All:            {QueryFrontend, Querier, Ingester, Ruler, Distributor, TableManager, DataPurger, StoreGateway},
 	}
 	for mod, targets := range deps {
 		if err := mm.AddDependency(mod, targets...); err != nil {
